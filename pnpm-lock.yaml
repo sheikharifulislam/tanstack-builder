@@ -119,6 +119,9 @@ importers:
       '@tanstack/ai':
         specifier: ^0.0.2
         version: 0.0.2(@alcyone-labs/zod-to-json-schema@4.0.10(zod@4.1.11))(zod@4.1.11)
+      '@tanstack/ai-client':
+        specifier: ^0.0.2
+        version: 0.0.2(@alcyone-labs/zod-to-json-schema@4.0.10(zod@4.1.11))(zod@4.1.11)
       '@tanstack/ai-gemini':
         specifier: ^0.0.2
         version: 0.0.2(@modelcontextprotocol/sdk@1.24.3(zod@4.1.11))(@tanstack/ai@0.0.2(@alcyone-labs/zod-to-json-schema@4.0.10(zod@4.1.11))(zod@4.1.11))
