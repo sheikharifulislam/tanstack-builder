@@ -144,7 +144,9 @@ export const extractImportDependencies = (
 		const fromMatch = stmt.match(/from\s+["']([^"']+)["']/);
 		if (!fromMatch) continue;
 		const modulePath = fromMatch[1];
-
+		if (modulePath.includes("@/lib/")) {
+			continue
+		}
 		if (modulePath.startsWith("@/components/")) {
 			const component = modulePath.split("/").pop();
 			if (component && component === "tanstack-form") {
