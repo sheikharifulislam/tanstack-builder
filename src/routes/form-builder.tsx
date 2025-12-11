@@ -6,6 +6,7 @@ import Loader from "@/components/loader";
 import { NotFound } from "@/components/not-found";
 import type { FormElementsSchema } from "@/lib/search-schema";
 import { seo } from "@/utils/seo";
+import { initializeFormBuilder } from "@/services/form-builder.service";
 
 export const Route = createFileRoute("/form-builder")({
 	head: () => ({
@@ -33,6 +34,7 @@ export const Route = createFileRoute("/form-builder")({
 
 function FormBuilderLayout() {
 	useEffect(() => {
+		initializeFormBuilder();
 		// initializeSettings is already called via createIsomorphicFn
 	}, []);
 

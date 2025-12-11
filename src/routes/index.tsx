@@ -219,7 +219,6 @@ const roadmapItems = [
 ];
 
 function HomePage() {
-	// Carousel logic removed
 
 	return (
 		<div className="w-full min-h-screen relative bg-background md:px-8 px-4 overflow-x-hidden">

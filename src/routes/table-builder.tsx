@@ -37,10 +37,7 @@ import {
 import { useScreenSize } from "@/hooks/use-screen-size";
 
 import { seo } from "@/utils/seo";
-
-const initializeTableStore = createClientOnlyFn(async () => {
-	// initializeTable is already called via createIsomorphicFn
-});
+import { initializeTable } from "@/services/table-builder.service";
 
 export const Route = createFileRoute("/table-builder")({
 	head: () => ({
@@ -61,15 +58,13 @@ function RouteComponent() {
 	const sidebarRef = useRef<ImperativePanelHandle>(null);
 	const screenSize = useScreenSize();
 	const isMdUp = screenSize.greaterThanOrEqual("md");
-	// const { share } = useSearch({ from: "/table-builder" });
 
-	const [isTableBuilderInitialized, setIsTableBuilderInitialized] =
-		useState(false);
 	const [activeTab, setActiveTab] = useState("columns");
 	const [shareDialogOpen, setShareDialogOpen] = useState(false);
 	const [sharedData, setSharedData] = useState<TableBuilder | null>(null);
+	const [isTableBuilderInitialized, setIsTableBuilderInitialized] =  useState(false);
 	useEffect(() => {
-		initializeTableStore();
+		initializeTable()
 		setIsTableBuilderInitialized(true);
 	}, []);
 

@@ -260,8 +260,6 @@ export const addColumnData = (): boolean => {
  */
 export const addColumn = (type: ColumnConfig["type"]): boolean => {
 	try {
-		// Ensure table is initialized
-		// initializeTable();
 		const columnKey = `column_${Date.now()}`;
 		const columns = getColumns();
 		const newColumn: ColumnConfig = {
@@ -522,7 +520,7 @@ export const initializeTable = createIsomorphicFn()
 			console.error("Failed to initialize table:", error);
 			return false;
 		}
-	})();
+	})
 
 // ============================================================================
 // Saved Templates Operations

@@ -6,24 +6,14 @@ import {
 	type FormElements,
 	formBuilderCollection,
 } from "@/db-collections/form-builder.collections";
+import { DEFAULT_FORM_ELEMENTS, DEFAULT_FORM_SETTINGS } from "@/services/form-builder.service";
 
 const defaultFormBuilderState: Omit<FormBuilder, "id"> = {
 	formName: "draft",
 	schemaName: "draftFormSchema",
 	isMS: false,
-	formElements: [],
-	settings: {
-		defaultRequiredValidation: true,
-		numericInput: false,
-		focusOnError: true,
-		validationMethod: "onDynamic",
-		asyncValidation: 500,
-		activeTab: "builder",
-		preferredSchema: "zod",
-		preferredFramework: "react",
-		preferredPackageManager: "pnpm",
-		isCodeSidebarOpen: false,
-	},
+	formElements: DEFAULT_FORM_ELEMENTS,
+	settings: DEFAULT_FORM_SETTINGS,
 };
 
 export type FormBuilderState = {
