@@ -21,7 +21,7 @@ Field types and their required properties:
 - Input: name, label, type (text/email/password/tel/number/url)
 - Password: name, label
 - Textarea: name, label
-- Checkbox: name, label
+- Checkbox: name, label **no placeholder needed**
 - Switch: name, label
 - RadioGroup: name, label, options (array of {value, label})
 - Select: name, label, options, placeholder

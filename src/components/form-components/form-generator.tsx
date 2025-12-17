@@ -302,13 +302,8 @@ export function FormGenerator() {
 							<div className="">
 								{[
 									{
-										title: "Multi-Step Job Application",
-										prompt: `Generate a multi-step job application form.
-Step 1: Personal info (first name and last name side by side, email, phone).
-Step 2: Education (school name, degree, graduation year).
-Step 3: Work experience (company name, job title, start and end dates side by side).
-Step 4: Skills (checkboxes for HTML, CSS, JavaScript, React, Node.js).
-Include validations for required fields and clear step titles.`,
+										title: "Simple Login Form",
+										prompt: `Create a login form with email and password fields, a "Remember me" checkbox, and make both email and password required.`,
 									},
 									{
 										title: "Side-by-Side Contact Form",
@@ -322,9 +317,14 @@ Include validations for required fields and clear step titles.`,
 										title: "Event Registration with Payment",
 										prompt: `Generate an event registration form with attendee name, email, phone, ticket type (select: VIP, Standard, Student), number of tickets (slider 1-10), dietary restrictions (checkboxes), and a special requests textarea.`,
 									},
-									{
-										title: "Simple Login Form",
-										prompt: `Create a login form with email and password fields, a "Remember me" checkbox, and make both email and password required.`,
+													{
+										title: "Multi-Step Job Application",
+										prompt: `Generate a multi-step job application form.
+Step 1: Personal info (first name and last name side by side, email, phone).
+Step 2: Education (school name, degree, graduation year).
+Step 3: Work experience (company name, job title, start and end dates side by side).
+Step 4: Skills (checkboxes for HTML, CSS, JavaScript, React, Node.js).
+Include validations for required fields and clear step titles.`,
 									},
 								].map((suggestion, i) => (
 									<Button
