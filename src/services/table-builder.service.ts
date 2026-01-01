@@ -187,6 +187,21 @@ export const setTableName = (name: string): boolean => {
 };
 
 /**
+ * Set generated command URL in the active table builder state
+ */
+export const setGeneratedCommandUrl = (url: string | undefined): boolean => {
+	try {
+		tableBuilderCollection.update(TABLE_ID, (draft) => {
+			draft.generatedCommandUrl = url;
+		});
+		return true;
+	} catch (error) {
+		console.error("Failed to set generated command URL:", error);
+		return false;
+	}
+};
+
+/**
  * Reset settings to defaults
  */
 export const resetSettings = (): boolean => {
@@ -549,11 +564,43 @@ export const saveTableTemplate = (name: string): boolean => {
 		};
 
 		localStorage.setItem(safeKey, JSON.stringify(template));
-		// Dispatch custom event to notify components of template changes
-		window.dispatchEvent(new CustomEvent("tableTemplateChanged"));
 		return true;
 	} catch (error) {
 		console.error("Failed to save table template:", error);
+		return false;
+	}
+};
+
+/**
+ * Save current table as a template with generated command URL
+ * Called automatically when command is generated successfully
+ */
+export const saveTableTemplateWithCommand = (
+	name: string,
+	generatedCommandUrl: string,
+): boolean => {
+	try {
+		if (typeof window === "undefined") return false;
+
+		const currentTable = getTableData();
+		if (!currentTable) {
+			throw new Error("No table data to save");
+		}
+
+		const safeKey = `saved-table-template-${name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}`;
+
+		const template: SavedTableTemplate = {
+			id: safeKey,
+			name,
+			data: currentTable,
+			createdAt: new Date().toISOString(),
+			generatedCommandUrl,
+		};
+
+		localStorage.setItem(safeKey, JSON.stringify(template));
+		return true;
+	} catch (error) {
+		console.error("Failed to save table template with command:", error);
 		return false;
 	}
 };
@@ -609,6 +656,7 @@ export const loadTableTemplate = (templateId: string): boolean => {
 
 		tableBuilderCollection.update(TABLE_ID, (draft) => {
 			Object.assign(draft, template.data);
+			draft.generatedCommandUrl = template.generatedCommandUrl;
 		});
 		return true;
 	} catch (error) {
@@ -625,8 +673,6 @@ export const deleteTableTemplate = (templateId: string): boolean => {
 		if (typeof window === "undefined") return false;
 
 		localStorage.removeItem(templateId);
-		// Dispatch custom event to notify components of template changes
-		window.dispatchEvent(new CustomEvent("tableTemplateChanged"));
 		return true;
 	} catch (error) {
 		console.error(`Failed to delete table template ${templateId}:`, error);

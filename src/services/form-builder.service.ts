@@ -197,7 +197,7 @@ const syncEntriesForFormArray = (formArray: FormArray): FormArrayEntry[] => {
 					entry.fields[index] &&
 					!Array.isArray(entry.fields[index]) &&
 					(entry.fields[index] as FormElement).fieldType ===
-						templateField.fieldType
+					templateField.fieldType
 				) {
 					const existing = entry.fields[index] as FormElement;
 					const { id: _id, name: _name, ...existingAttrs } = existing;
@@ -426,6 +426,21 @@ export const setSchemaName = (name: string): boolean => {
 		return true;
 	} catch (error) {
 		console.error("Failed to set schema name:", error);
+		return false;
+	}
+};
+
+/**
+ * Set generated command URL in the active form builder state
+ */
+export const setGeneratedCommandUrl = (url: string | undefined): boolean => {
+	try {
+		formBuilderCollection.update(FORM_ID, (draft) => {
+			draft.generatedCommandUrl = url;
+		});
+		return true;
+	} catch (error) {
+		console.error("Failed to set generated command URL:", error);
 		return false;
 	}
 };
@@ -1440,10 +1455,43 @@ export const saveFormTemplate = (name: string): boolean => {
 		};
 
 		localStorage.setItem(safeKey, JSON.stringify(template));
-		window.dispatchEvent(new CustomEvent("formTemplateChanged"));
 		return true;
 	} catch (error) {
 		console.error("Failed to save form template:", error);
+		return false;
+	}
+};
+
+/**
+ * Save current form as a template with generated command URL
+ * Called automatically when command is generated successfully
+ */
+export const saveFormTemplateWithCommand = (
+	name: string,
+	generatedCommandUrl: string,
+): boolean => {
+	try {
+		if (typeof window === "undefined") return false;
+
+		const currentForm = getFormData();
+		if (!currentForm) {
+			throw new Error("No form data to save");
+		}
+
+		const safeKey = `saved-form-template-${name.replace(/[^a-zA-Z0-9]/g, "_").toLowerCase()}`;
+
+		const template: SavedFormTemplate = {
+			id: safeKey,
+			name,
+			data: currentForm,
+			createdAt: new Date().toISOString(),
+			generatedCommandUrl,
+		};
+
+		localStorage.setItem(safeKey, JSON.stringify(template));
+		return true;
+	} catch (error) {
+		console.error("Failed to save form template with command:", error);
 		return false;
 	}
 };
@@ -1497,6 +1545,8 @@ export const loadFormTemplate = (templateId: string): boolean => {
 
 		formBuilderCollection.update(FORM_ID, (draft) => {
 			Object.assign(draft, template.data);
+			// Also copy the generatedCommandUrl if available
+			draft.generatedCommandUrl = template.generatedCommandUrl;
 		});
 		return true;
 	} catch (error) {
@@ -1513,7 +1563,6 @@ export const deleteFormTemplate = (templateId: string): boolean => {
 		if (typeof window === "undefined") return false;
 
 		localStorage.removeItem(templateId);
-		window.dispatchEvent(new CustomEvent("formTemplateChanged"));
 		return true;
 	} catch (error) {
 		console.error(`Failed to delete form template ${templateId}:`, error);

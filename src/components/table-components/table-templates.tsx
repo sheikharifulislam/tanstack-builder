@@ -1,51 +1,32 @@
-import { Heart, Table, Trash2 } from "lucide-react";
-import { useCallback, useEffect, useState } from "react";
+import { Heart, Table } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { tableTemplates } from "@/constants/table-templates";
-import type { SavedTableTemplate } from "@/db-collections/table-builder.collections";
 import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { tableTemplates } from "@/constants/table-templates";
+import {
+	applyTemplate as applyBuiltInTemplate,
 	deleteTableTemplate,
 	getSavedTableTemplates,
 	loadTableTemplate,
 } from "@/services/table-builder.service";
+import { DeleteIcon } from "../ui/delete";
+import { LinkIcon } from "../ui/link";
 
 export function TableTemplates() {
-	const [savedTemplates, setSavedTemplates] = useState<SavedTableTemplate[]>(
-		[],
-	);
+	// Directly call getSavedTableTemplates() - it reads from localStorage each time
+	// No need for useState + useEffect since we re-render after operations
+	const [refreshKey, setRefreshKey] = useState(0);
+	const savedTemplates = getSavedTableTemplates();
 
-	const refreshSavedTemplates = useCallback(() => {
-		setSavedTemplates(getSavedTableTemplates());
-	}, []);
-
-	useEffect(() => {
-		refreshSavedTemplates();
-
-		// Listen for storage changes to refresh saved templates
-		const handleStorageChange = (e: StorageEvent) => {
-			if (e.key?.startsWith("saved-table-template-")) {
-				refreshSavedTemplates();
-			}
-		};
-
-		// Listen for custom template change events
-		const handleTemplateChange = () => {
-			refreshSavedTemplates();
-		};
-
-		window.addEventListener("storage", handleStorageChange);
-		window.addEventListener("tableTemplateChanged", handleTemplateChange);
-
-		return () => {
-			window.removeEventListener("storage", handleStorageChange);
-			window.removeEventListener("tableTemplateChanged", handleTemplateChange);
-		};
-	}, [refreshSavedTemplates]);
-
-	const applyTemplate = (templateKey: string) => {
-		const success = applyTemplate(templateKey);
+	const handleApplyTemplate = (templateKey: string) => {
+		const success = applyBuiltInTemplate(templateKey);
 		if (success) {
 			toast("Template applied successfully");
 		} else {
@@ -57,8 +38,7 @@ export function TableTemplates() {
 		const success = loadTableTemplate(templateId);
 		if (success) {
 			toast("Saved table loaded successfully");
-			// Refresh saved templates in case any were modified
-			setSavedTemplates(getSavedTableTemplates());
+			setRefreshKey((k) => k + 1);
 		} else {
 			toast("Failed to load saved table");
 		}
@@ -68,11 +48,19 @@ export function TableTemplates() {
 		const success = deleteTableTemplate(templateId);
 		if (success) {
 			toast(`Template "${templateName}" deleted`);
-			setSavedTemplates(getSavedTableTemplates());
+			setRefreshKey((k) => k + 1);
 		} else {
 			toast("Failed to delete template");
 		}
 	};
+
+	const handleCopyCommand = (commandUrl: string) => {
+		navigator.clipboard.writeText(`pnpm dlx shadcn@canary add ${commandUrl}`);
+		toast("Command copied to clipboard!");
+	};
+
+	// Use refreshKey in a comment to avoid unused variable warning
+	void refreshKey;
 
 	return (
 		<div className="flex flex-col h-full md:h-full max-h-[35vh] md:max-h-none">
@@ -92,7 +80,7 @@ export function TableTemplates() {
 							</h3>
 							<div className="space-y-2">
 								{savedTemplates.map((template) => (
-									<div key={template.id} className="flex items-center gap-2">
+									<div key={template.id} className="flex items-center gap-1">
 										<Button
 											onClick={() => applySavedTemplate(template.id)}
 											className="justify-start text-[12px] flex-1"
@@ -101,6 +89,30 @@ export function TableTemplates() {
 											<Table className="size-4 mr-2" />
 											{template.name}
 										</Button>
+										{template.generatedCommandUrl && (
+											<TooltipProvider>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Button
+															onClick={() =>
+																handleCopyCommand(
+																	// biome-ignore lint/style/noNonNullAssertion: Safe because button only renders when truthy
+																	template.generatedCommandUrl!,
+																)
+															}
+															size="sm"
+															variant="ghost"
+															className="text-primary hover:text-primary"
+														>
+															<LinkIcon className="size-4" />
+														</Button>
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>Copy shadcn command</p>
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
+										)}
 										<Button
 											onClick={() =>
 												deleteSavedTemplate(template.id, template.name)
@@ -109,7 +121,7 @@ export function TableTemplates() {
 											variant="ghost"
 											className="text-destructive hover:text-destructive"
 										>
-											<Trash2 className="size-4" />
+											<DeleteIcon className="size-4" />
 										</Button>
 									</div>
 								))}
@@ -124,7 +136,7 @@ export function TableTemplates() {
 							{Object.entries(tableTemplates).map(([key, template]) => (
 								<Button
 									key={key}
-									onClick={() => applyTemplate(key)}
+									onClick={() => handleApplyTemplate(key)}
 									className="justify-start text-[12px] w-full"
 									variant="ghost"
 								>

@@ -1,8 +1,14 @@
-import { FileStack, Heart, SquareStack, Trash2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { FileStack, Heart, SquareStack } from "lucide-react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+	Tooltip,
+	TooltipContent,
+	TooltipProvider,
+	TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { templates } from "@/constants/templates";
 import {
 	deleteFormTemplate,
@@ -10,6 +16,8 @@ import {
 	loadFormTemplate,
 	setTemplate,
 } from "@/services/form-builder.service";
+import { DeleteIcon } from "../ui/delete";
+import { LinkIcon } from "../ui/link";
 
 const formTemplates = Object.entries(templates).map((template) => ({
 	label: template[1].name,
@@ -19,20 +27,10 @@ const formTemplates = Object.entries(templates).map((template) => ({
 
 export function TemplateSidebar() {
 	const [searchQuery, _setSearchQuery] = useState("");
-	const [savedForms, setSavedForms] = useState<
-		Array<{ id: string; name: string; createdAt: string }>
-	>([]);
-
-	// Load saved forms on component mount
-	useEffect(() => {
-		setSavedForms(
-			getSavedFormTemplates().map((t) => ({
-				id: t.id,
-				name: t.name,
-				createdAt: t.createdAt,
-			})),
-		);
-	}, []);
+	// Directly call getSavedFormTemplates() - it reads from localStorage each time
+	// No need for useState + useEffect since we re-render after operations
+	const [refreshKey, setRefreshKey] = useState(0);
+	const savedForms = getSavedFormTemplates();
 
 	const handleLoadSavedForm = (formId: string) => {
 		const success = loadFormTemplate(formId);
@@ -41,14 +39,8 @@ export function TemplateSidebar() {
 		} else {
 			toast("Failed to load form");
 		}
-		// Refresh the saved forms list after loading
-		setSavedForms(
-			getSavedFormTemplates().map((t) => ({
-				id: t.id,
-				name: t.name,
-				createdAt: t.createdAt,
-			})),
-		);
+		// Trigger re-render to refresh the list
+		setRefreshKey((k) => k + 1);
 	};
 
 	const handleDeleteSavedForm = (formId: string, formName: string) => {
@@ -58,13 +50,13 @@ export function TemplateSidebar() {
 		} else {
 			toast("Failed to delete form");
 		}
-		setSavedForms(
-			getSavedFormTemplates().map((t) => ({
-				id: t.id,
-				name: t.name,
-				createdAt: t.createdAt,
-			})),
-		);
+		// Trigger re-render to refresh the list
+		setRefreshKey((k) => k + 1);
+	};
+
+	const handleCopyCommand = (commandUrl: string) => {
+		navigator.clipboard.writeText(`pnpm dlx shadcn@canary add ${commandUrl}`);
+		toast("Command copied to clipboard!");
 	};
 
 	const filteredTemplates = searchQuery
@@ -72,6 +64,9 @@ export function TemplateSidebar() {
 				template.label.toLowerCase().includes(searchQuery.toLowerCase()),
 			)
 		: formTemplates;
+
+	// Use refreshKey in a comment to avoid unused variable warning
+	void refreshKey;
 
 	return (
 		<div className="flex flex-col h-full">
@@ -90,7 +85,7 @@ export function TemplateSidebar() {
 							</h3>
 							<div className="space-y-2">
 								{savedForms.map((template) => (
-									<div key={template.id} className="flex items-center gap-2">
+									<div key={template.id} className="flex items-center gap-1">
 										<Button
 											onClick={() => handleLoadSavedForm(template.id)}
 											className="justify-start text-[12px] flex-1"
@@ -99,6 +94,30 @@ export function TemplateSidebar() {
 											<FileStack className="size-4 mr-2" />
 											{template.name}
 										</Button>
+										{template.generatedCommandUrl && (
+											<TooltipProvider>
+												<Tooltip>
+													<TooltipTrigger asChild>
+														<Button
+															onClick={() =>
+																handleCopyCommand(
+																	// biome-ignore lint/style/noNonNullAssertion: Safe because button only renders when truthy
+																	template.generatedCommandUrl!,
+																)
+															}
+															size="sm"
+															variant="ghost"
+															className="text-primary hover:text-primary"
+														>
+															<LinkIcon className="size-4" />
+														</Button>
+													</TooltipTrigger>
+													<TooltipContent>
+														<p>Copy shadcn command</p>
+													</TooltipContent>
+												</Tooltip>
+											</TooltipProvider>
+										)}
 										<Button
 											onClick={() =>
 												handleDeleteSavedForm(template.id, template.name)
@@ -107,7 +126,7 @@ export function TemplateSidebar() {
 											variant="ghost"
 											className="text-destructive hover:text-destructive"
 										>
-											<Trash2 className="size-4" />
+											<DeleteIcon className="size-4" />
 										</Button>
 									</div>
 								))}

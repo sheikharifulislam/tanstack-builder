@@ -15,7 +15,12 @@ import {
 	generateImports,
 } from "@/lib/form-code-generators";
 import { generateValidationCode } from "@/lib/schema-generators";
-import { setFormName } from "@/services/form-builder.service";
+import {
+	saveFormTemplateWithCommand,
+	setFormName,
+	setGeneratedCommandUrl,
+} from "@/services/form-builder.service";
+
 import type { CreateRegistryResponse } from "@/types/form-types";
 import { logger } from "@/utils/utils";
 import { AnimatedIconButton } from "../ui/animated-icon-button";
@@ -44,12 +49,18 @@ const formSchema = z.object({
 	formName: z.string().min(1, { message: "Form name is required" }),
 });
 function CodeDialog() {
-	const { formName, formElements, isMS, schemaName } = useFormBuilderState();
+	const { formName, formElements, isMS, schemaName, generatedCommandUrl } =
+		useFormBuilderState();
 	const settings = useSettings();
 	const validationSchema = settings?.preferredSchema || "zod";
 	const [open, setOpen] = useState(false);
-	const [isGenerateSuccess, setIsGenerateSuccess] = useState(false);
-	const [generatedId, setGeneratedId] = useState<string>("");
+	// Initialize with existing command if available
+	const [isGenerateSuccess, setIsGenerateSuccess] = useState(
+		!!generatedCommandUrl,
+	);
+	const [generatedId, setGeneratedId] = useState<string>(
+		generatedCommandUrl || "",
+	);
 	const id = useId();
 	const tabsData = [
 		{
@@ -149,6 +160,10 @@ function CodeDialog() {
 				if (result.data?.id) {
 					setGeneratedId(result.data.id);
 					setIsGenerateSuccess(true);
+					// Update command URL in active form builder state
+					setGeneratedCommandUrl(result.data.id);
+					// Auto-save/update template with generated command URL
+					saveFormTemplateWithCommand(formName, result.data.id);
 				}
 			} catch (error) {
 				const message =
@@ -197,10 +212,23 @@ function CodeDialog() {
 			},
 		},
 	});
+	// Sync state when generatedCommandUrl changes (e.g., loading a template)
 	useEffect(() => {
-		setIsGenerateSuccess(false);
-		setGeneratedId("");
-	}, []);
+		if (generatedCommandUrl) {
+			setIsGenerateSuccess(true);
+			setGeneratedId(generatedCommandUrl);
+		} else {
+			setIsGenerateSuccess(false);
+			setGeneratedId("");
+		}
+	}, [generatedCommandUrl]);
+
+	// Sync form field value when formName changes (e.g., loading a template)
+	useEffect(() => {
+		if (formName && form.state.values.formName !== formName) {
+			form.setFieldValue("formName", formName);
+		}
+	}, [formName, form]);
 	return (
 		<ResponsiveDialog open={open} onOpenChange={setOpen}>
 			<ResponsiveDialogTrigger asChild>

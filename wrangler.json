@@ -1,18 +1,18 @@
-
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "tanstack-form-builder",
 	"logpush": true,
-		 "compatibility_date": "2025-09-24",
-		 "compatibility_flags": [
-			"nodejs_compat",
+	"compatibility_date": "2025-09-24",
+	"compatibility_flags": [
+		"nodejs_compat",
 		"enable_request_signal",
-    "request_signal_passthrough",
-		"no_handle_cross_request_promise_resolution"],
+		"request_signal_passthrough",
+		"no_handle_cross_request_promise_resolution"
+	],
 	"placement": {
 		"mode": "smart"
 	},
-	"main" : "./src/server.ts",
+	"main": "./src/server.ts",
 	"vars": {
 		"MY_VAR": "Hello from Cloudflare"
 	},
@@ -23,7 +23,10 @@
 			"preview_id": "d511674f54a34905bb19e4c04c7bafa2"
 		}
 	],
-	"assets": { "directory": "./public/", "binding": "ASSETS"  },
+	"assets": {
+		"directory": "./public/",
+		"binding": "ASSETS"
+	},
 	"ratelimits": [
 		{
 			"name": "AI_RATE_LIMITER",
@@ -33,5 +36,12 @@
 				"period": 60,
 			}
 		},
+	],
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "tancn-db",
+			"database_id": "99e09685-b118-471b-88d1-1a23a6e707dc"
+		}
 	],
 }

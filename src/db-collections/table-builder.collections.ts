@@ -78,6 +78,7 @@ export const TableBuilderSchema = v.object({
 		),
 		data: v.array(v.record(v.string(), v.any())),
 	}),
+	generatedCommandUrl: v.optional(v.string()),
 });
 
 export type TableBuilder = v.InferOutput<typeof TableBuilderSchema>;
@@ -115,6 +116,7 @@ export const SavedTableTemplateSchema = v.object({
 	name: v.string(),
 	data: TableBuilderSchema,
 	createdAt: v.string(),
+	generatedCommandUrl: v.optional(v.string()),
 });
 
 export type SavedTableTemplate = v.InferOutput<typeof SavedTableTemplateSchema>;

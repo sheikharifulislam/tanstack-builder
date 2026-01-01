@@ -29,13 +29,14 @@ const defaultTableState = {
 			stripped: false,
 			headerBorder: true,
 			headerSticky: false,
-			width: "auto",
+			width: "auto" as const,
 		},
 	},
 	table: {
 		columns: DEFAULT_TABLE_COLUMNS,
 		data: DEFAULT_TABLE_DATA,
 	},
+	generatedCommandUrl: undefined as string | undefined,
 };
 
 const useTableStore = createIsomorphicFn()
@@ -50,6 +51,7 @@ const useTableStore = createIsomorphicFn()
 					tableName: tableBuilder.tableName,
 					settings: tableBuilder.settings,
 					table: tableBuilder.table,
+					generatedCommandUrl: tableBuilder.generatedCommandUrl,
 				})),
 		);
 

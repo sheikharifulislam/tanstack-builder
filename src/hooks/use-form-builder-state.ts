@@ -26,6 +26,7 @@ export type FormBuilderState = {
 	formElements: FormElements;
 	settings: FormBuilderSettings;
 	lastAddedStepIndex?: number;
+	generatedCommandUrl?: string;
 };
 
 const useFormBuilderState = createIsomorphicFn()
@@ -43,6 +44,7 @@ const useFormBuilderState = createIsomorphicFn()
 					formElements: formBuilder.formElements,
 					settings: formBuilder.settings,
 					lastAddedStepIndex: formBuilder.lastAddedStepIndex,
+					generatedCommandUrl: formBuilder.generatedCommandUrl,
 				})),
 		);
 

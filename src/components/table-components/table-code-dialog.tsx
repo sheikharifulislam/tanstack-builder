@@ -4,7 +4,11 @@ import * as z from "zod";
 import { GeneratedTableCodeViewer } from "@/components/table-components/table-code-viewer";
 import useTableStore from "@/hooks/use-table-store";
 import { generateTable } from "@/lib/table-code-generators/react/index";
-import { setTableName } from "@/services/table-builder.service";
+import {
+	saveTableTemplateWithCommand,
+	setGeneratedCommandUrl,
+	setTableName,
+} from "@/services/table-builder.service";
 import type { CreateRegistryResponse } from "@/types/form-types";
 import { logger } from "@/utils/utils";
 import { AnimatedIconButton } from "../ui/animated-icon-button";
@@ -34,10 +38,16 @@ const tableSchema = z.object({
 
 function TableCodeDialog() {
 	const tableData = useTableStore();
+	const { generatedCommandUrl } = tableData;
 
 	const [open, setOpen] = useState(false);
-	const [isGenerateSuccess, setIsGenerateSuccess] = useState(false);
-	const [generatedId, setGeneratedId] = useState<string>("");
+	// Initialize with existing command if available
+	const [isGenerateSuccess, setIsGenerateSuccess] = useState(
+		!!generatedCommandUrl,
+	);
+	const [generatedId, setGeneratedId] = useState<string>(
+		generatedCommandUrl || "",
+	);
 	const id = useId();
 
 	const tabsData = [
@@ -117,6 +127,10 @@ function TableCodeDialog() {
 				if (result.data?.id) {
 					setGeneratedId(result.data.id);
 					setIsGenerateSuccess(true);
+					// Update command URL in active table builder state
+					setGeneratedCommandUrl(result.data.id);
+					// Auto-save/update template with generated command URL
+					saveTableTemplateWithCommand(tableData.tableName, result.data.id);
 				}
 			} catch (error) {
 				const message =
@@ -166,10 +180,23 @@ function TableCodeDialog() {
 		},
 	});
 
+	// Sync state when generatedCommandUrl changes (e.g., loading a template)
 	useEffect(() => {
-		setIsGenerateSuccess(false);
-		setGeneratedId("");
-	}, []);
+		if (generatedCommandUrl) {
+			setIsGenerateSuccess(true);
+			setGeneratedId(generatedCommandUrl);
+		} else {
+			setIsGenerateSuccess(false);
+			setGeneratedId("");
+		}
+	}, [generatedCommandUrl]);
+
+	// Sync form field value when tableName changes (e.g., loading a template)
+	useEffect(() => {
+		if (tableData.tableName && form.state.values.tableName !== tableData.tableName) {
+			form.setFieldValue("tableName", tableData.tableName);
+		}
+	}, [tableData.tableName, form]);
 
 	return (
 		<ResponsiveDialog open={open} onOpenChange={setOpen}>

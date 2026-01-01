@@ -251,6 +251,7 @@ export const FormBuilderSchema = v.object({
 	formElements: v.optional(FormElementsSchema, []),
 	settings: v.optional(FormBuilderSettingsSchema, {}),
 	lastAddedStepIndex: v.optional(v.number()),
+	generatedCommandUrl: v.optional(v.string()),
 });
 
 // ============================================================================
@@ -295,6 +296,7 @@ export const SavedFormTemplateSchema = v.object({
 	name: v.string(),
 	data: FormBuilderSchema,
 	createdAt: v.string(),
+	generatedCommandUrl: v.optional(v.string()),
 });
 
 export type SavedFormTemplate = v.InferOutput<typeof SavedFormTemplateSchema>;
